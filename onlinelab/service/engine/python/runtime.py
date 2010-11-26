@@ -2,7 +2,6 @@
 
 import os
 import sys
-import socket
 
 from interpreter import PythonInterpreter
 from server import PythonXMLRPCServer
@@ -18,27 +17,13 @@ class PythonEngine(object):
         else:
             self.interpreter = interpreter
 
-    @classmethod
-    def find_port(cls):
-        """Find a free port for this engine. """
-        sock = socket.socket()
-        sock.bind(('', 0))
-        port = sock.getsockname()[1]
-        sock.close()
-        del sock
-        return port
+    def notify_ready(self):
+        """Notify a service that an engine is running. """
+        sys.stdout.write('OK (pid=%s)\n' % os.getpid())
 
-    def notify_ready(self, port):
-        """Notify a service that the engine is running. """
-        sys.stdout.write('port=%s, pid=%s\n' % (port, os.getpid()))
-
-    def run_server(self, port, interactive=False):
-        """Start a server for handling requests from a service. """
+    def run(self, port, interactive=False):
+        """Run a Python engine on the given port. """
         server = self.transport(port, self.interpreter)
-        self.notify_ready(port)
+        self.notify_ready()
         server.serve_forever(interactive)
-
-    def run(self, interactive=False, port=None):
-        """Find a free port and run server for this engine. """
-        self.run_server(port or self.find_port(), interactive)
 

@@ -5,6 +5,6 @@ from interpreter import PythonInterpreter
 
 boot = """\
 from onlinelab.service.engine.python import PythonEngine
-PythonEngine().run()
+PythonEngine().run(port=%(port)d)
 """
 

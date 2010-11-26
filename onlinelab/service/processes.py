@@ -7,6 +7,7 @@ import time
 import fcntl
 import signal
 import shutil
+import socket
 import logging
 import xmlrpclib
 import functools
@@ -33,7 +34,7 @@ class UIDSpaceExhausted(Exception):
 class ProcessManager(object):
     """Start and manage system processes for engines. """
 
-    _re = re.compile("^.*?port=(?P<port>\d+), pid=(?P<pid>\d+)")
+    _re = re.compile(r"^.*?OK \(pid=(?P<pid>\d+)\)")
 
     _inotify_mask = pyinotify.IN_CREATE \
                   | pyinotify.IN_MODIFY \
@@ -106,6 +107,16 @@ class ProcessManager(object):
             cls._instance = cls()
         return cls._instance
 
+    @classmethod
+    def find_port(cls):
+        """Find a free socket port. """
+        sock = socket.socket()
+        sock.bind(('', 0))
+        port = sock.getsockname()[1]
+        sock.close()
+        del sock
+        return port
+
     def build_env(self):
         """Build hardened environment for engine process. """
         if self.settings.environ is True:
@@ -164,11 +175,13 @@ class ProcessManager(object):
 
         # XXX: this is temporary solution for development convenience
 
+        port = self.find_port()
+
         try:
             command = args.command
         except AttributeError:
             from engine.python import boot
-            command = ["python", "-c", "%s" % boot]
+            command = ["python", "-c", boot % {'port': port}]
 
         env = self.build_env()
 
@@ -221,8 +234,7 @@ class ProcessManager(object):
         # Lets start the engine's process. We must close all non-standard file
         # descriptors (via 'close_fds'), because otherwise IOLoop will hang.
         # When the process will be ready to handle requests from the core, it
-        # will tell us this by sending a single line of well formatted output
-        # (containing port numer and PID) via a pipe.
+        # will tell us this by sending a single line of well formatted output.
 
         proc = subprocess.Popen(command, preexec_fn=preexec_fn, cwd=cwd, env=env,
             close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -232,7 +244,7 @@ class ProcessManager(object):
         # process (ready for processing requests, unexpected death).
 
         fd = proc.stdout.fileno()
-        params = uuid, proc, uid, gid, cwd, okay, fail
+        params = uuid, proc, port, uid, gid, cwd, okay, fail
 
         deadline = time.time() + self.settings.engine_timeout
 
@@ -259,7 +271,7 @@ class ProcessManager(object):
 
         proc.kill() # only kill, rest will be done in _on_run_handler
 
-    def _on_run_handler(self, (uuid, proc, uid, gid, cwd, okay, fail), tm, fd, events):
+    def _on_run_handler(self, (uuid, proc, port, uid, gid, cwd, okay, fail), tm, fd, events):
         """Startup handler that gets executed on pipe write or error. """
         timeout = False
 
@@ -281,16 +293,13 @@ class ProcessManager(object):
                 fail('engine-died')
         else:
             # Connection was established, so lets get first output line
-            # and check if it contains valid data (socket port numer and
-            # process identifier).
+            # and check if it contains valid data (OK (pid=...)).
 
             output = proc.stdout.readline()
             result = self._re.match(output)
 
             if result is not None:
-                port = int(result.groupdict()['port'])
                 process = EngineProcess(uuid, proc, cwd, port)
-
                 self.processes[uuid] = process
 
                 # XXX: move this to EngineProcess
