@@ -3,8 +3,6 @@
 import os
 import inspect
 
-from highlight import Highlight
-
 class Inspector(object):
     """Wrapper over Python's inspect module. """
 
@@ -26,30 +24,6 @@ class Inspector(object):
         'routine',
         'traceback',
     ]
-
-    def get_pretty(self, obj, highlight=None):
-        """Get all information about ``obj`` in pretty form. """
-        if highlight is None:
-            highlight = Highlight()
-
-        info = self.get_info(obj)
-
-        docstring = info['docstring']
-
-        if docstring is not None:
-            info['docstring_html'] = highlight.docstring(docstring)
-
-        source = info['source']
-
-        if source is not None:
-            info['source_html'] = highlight.python(source)
-
-        args = info['args']
-
-        if args is not None:
-            info['args_html'] = highlight.python(args)
-
-        return info
 
     def get_basic_info(self, obj):
         """Get basic information about ``obj``. """

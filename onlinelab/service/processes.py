@@ -25,6 +25,7 @@ from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 from tornado.httputil import HTTPHeaders
 
 import utilities
+import highlight
 
 from ..utils import settings
 
@@ -668,6 +669,31 @@ class EngineProcess(object):
 
         result['shout'] = self.out.getvalue()
         result['sherr'] = self.err.getvalue()
+
+        hl = highlight.Highlight()
+
+        traceback = result.get('traceback')
+
+        if traceback:
+            result['traceback_html'] = hl.traceback(traceback)
+
+        info = result.get('info')
+
+        if info is not None:
+            docstring = info.get('docstring')
+
+            if docstring is not None:
+                info['docstring_html'] = hl.docstring(docstring)
+
+            source = info.get('source')
+
+            if source is not None:
+                info['source_html'] = hl.python(source)
+
+            args = info.get('args')
+
+            if args is not None:
+                info['args_html'] = hl.python(args)
 
         okay(result)
 

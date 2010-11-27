@@ -1,4 +1,4 @@
-"""Source code highlighting module based on Pygments. """
+"""Source code highlighting and text rendering based on Pygments and Docutils. """
 
 import pygments
 

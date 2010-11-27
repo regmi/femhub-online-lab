@@ -11,7 +11,6 @@ from StringIO import StringIO
 from outputtrap import OutputTrap
 from namespace import PythonNamespace
 from inspector import Inspector
-from highlight import Highlight
 
 class PythonInterpreter(object):
     """Customized Python interpreter with two-stage evaluation. """
@@ -27,7 +26,6 @@ class PythonInterpreter(object):
         self.debug = debug
         self.trap = OutputTrap()
         self.inspector = Inspector()
-        self.highlight = Highlight()
         self.index = 0
 
     def complete(self, source):
@@ -175,9 +173,6 @@ class PythonInterpreter(object):
                 'interrupted': interrupted,
             }
 
-            if traceback:
-                result['traceback_html'] = self.highlight.traceback(traceback)
-
             return result
         finally:
             self.trap.reset()
@@ -223,7 +218,7 @@ class PythonInterpreter(object):
                         break
 
         if obj is not None:
-            info = self.inspector.get_pretty(obj, self.highlight)
+            info = self.inspector.get_info(obj)
         else:
             info = None
 
