@@ -25,12 +25,12 @@ roles.register_canonical_role('class', class_role)
 class Highlight(object):
     """Simple class for highlighting Python. """
 
-    settings = {'warning_stream': '', 'halt_level': utils.Reporter.ERROR_LEVEL}
+    _settings = {'halt_level': utils.Reporter.ERROR_LEVEL}
 
     def docstring(self, text):
         """Render a Python docstring. """
         try:
-            result = core.publish_parts(text, writer_name='html', settings_overrides=self.settings)
+            result = core.publish_parts(text, writer_name='html', settings_overrides=self._settings)
         except utils.SystemMessage:
             return None
         else:
