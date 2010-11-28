@@ -469,3 +469,18 @@ def load(args, settings):
 
     print "Done."
 
+
+def run(args, settings):
+    """Run code in the context of Online Lab core. """
+    if not args.codes:
+        print "Nothing to do."
+        sys.exit(1)
+
+    namespace = {'settings': settings}
+
+    for code in args.codes:
+        code = code.replace('\\n', '\n')
+        exec code in namespace
+
+    print "Done."
+

@@ -192,6 +192,12 @@ class Core(Module):
         settings = self._configure(args)
         onlinelab.core.runtime.load(args, settings)
 
+    def run(self, args):
+        """Run code in the context of Online Lab core. """
+        import onlinelab.core.runtime
+        settings = self._configure(args)
+        onlinelab.core.runtime.run(args, settings)
+
 class Service(Module):
     """Online Lab service module. """
 
@@ -385,6 +391,13 @@ class OnlineLab(object):
                 'default': False,
             },
         ),
+        'code': (
+            ('--code',), {
+                'action': 'append',
+                'dest': 'codes',
+                'type': str,
+            },
+        ),
     }
 
     modules = {
@@ -400,6 +413,7 @@ class OnlineLab(object):
             'purge': [],
             'dump': ['path', 'purge'],
             'load': ['path', 'purge', 'dry-run'],
+            'run': ['code'],
         },
         'service': {
             'init': [],
