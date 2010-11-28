@@ -10,9 +10,33 @@ from onlinelab.service.engine import Interpreter
 class JavaScriptInterpreter(Interpreter):
     """Customized JavaScript interpreter. """
 
+    _extensions = ['print']
+
     def __init__(self, debug=False):
         super(JavaScriptInterpreter, self).__init__(debug)
-        self.context = PyV8.JSContext()
+
+        extensions = []
+
+        for ext in self._extensions:
+            name = getattr(self, 'setup_' + ext)()
+            extensions.append(name)
+
+        self.context = PyV8.JSContext(extensions=extensions)
+
+    @classmethod
+    def setup_print(cls):
+        """Setup JavaScript analog of ``print`` statement. """
+
+        def jsext_print(*args):
+            """Print values to stdout. """
+            for arg in args:
+                print arg,
+            print
+
+        src = 'native function print(arg);'
+        ext = PyV8.JSExtension('print/python', src, lambda _: jsext_print)
+
+        return ext.name
 
     def evaluate(self, source):
         """Evaluate a piece of JavaScript source code. """
