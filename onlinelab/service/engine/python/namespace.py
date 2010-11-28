@@ -3,7 +3,7 @@
 class PythonNamespace(dict):
     """Base namespace for Python interpreters. """
 
-    components = ['matplotlib', 'pylab', 'show']
+    components = ['matplotlib', 'pylab', 'mplplot']
 
     def __init__(self, locals={}, disable=['pylab']):
         if locals is not None:
@@ -37,25 +37,25 @@ class PythonNamespace(dict):
         else:
             return dict(pylab.__dict__)
 
-    def setup_show(self):
-        """Override pylab's show() function with our own. """
-        try:
+    def setup_mplplot(self):
+        """Extend global namespace with plotting function. """
+
+        def mplplot(*args, **kwargs):
+            """Plot data using matplotlib and pylab. """
             import pylab
-        except ImportError:
-            return None
 
-        import base64
-        import hashlib
-        import inspect
+            import base64
+            import hashlib
+            import inspect
 
-        try:
-            from cStringIO import StringIO
-        except ImportError:
-            from StringIO import StringIO
+            try:
+                from cStringIO import StringIO
+            except ImportError:
+                from StringIO import StringIO
 
-        def show():
-            """Online Lab version of pylab's show(). """
             buffer = StringIO()
+
+            pylab.plot(*args, **kwargs)
             pylab.savefig(buffer, format='png', dpi=80)
 
             frame = inspect.currentframe().f_back
@@ -83,5 +83,5 @@ class PythonNamespace(dict):
             finally:
                 del frame
 
-        return {'show': show}
+        return {'mplplot': mplplot}
 
