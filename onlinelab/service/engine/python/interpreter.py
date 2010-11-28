@@ -8,33 +8,25 @@ import rlcompleter
 
 from StringIO import StringIO
 
-from onlinelab.service.engine import OutputTrap
+from onlinelab.service.engine import Interpreter
 
 from namespace import PythonNamespace
 from inspector import Inspector
 
-class PythonInterpreter(object):
+class PythonInterpreter(Interpreter):
     """Customized Python interpreter with two-stage evaluation. """
 
-    filename = '<online-lab>'
-
-    def __init__(self, locals={}, debug=False):
-        if not isinstance(locals, PythonNamespace):
-            self.locals = dict(PythonNamespace(locals))
-        else:
-            self.locals = dict(locals)
-
-        self.debug = debug
-        self.trap = OutputTrap()
+    def __init__(self, debug=False):
+        super(PythonInterpreter, self).__init__(debug)
+        self.namespace = PythonNamespace()
         self.inspector = Inspector()
-        self.index = 0
 
     def complete(self, source):
         """Get all completions for an initial source code. """
         interrupted = False
 
         try:
-            completer = rlcompleter.Completer(self.locals)
+            completer = rlcompleter.Completer(self.namespace)
 
             matches = set([])
             state = 0
@@ -60,7 +52,7 @@ class PythonInterpreter(object):
                     name, attrs = match, None
 
                 try:
-                    obj = self.locals[name]
+                    obj = self.namespace[name]
                 except KeyError:
                     obj = None
                 else:
@@ -116,7 +108,7 @@ class PythonInterpreter(object):
 
         try:
             try:
-                del self.locals['__plots__']
+                del self.namespace['__plots__']
             except KeyError:
                 pass
 
@@ -134,10 +126,10 @@ class PythonInterpreter(object):
                         traceback = self.syntaxerror()
                         eval_source = None
                     else:
-                        exec exec_code in self.locals
+                        exec exec_code in self.namespace
 
                 if eval_source is not None:
-                    result = eval(eval_source, self.locals)
+                    result = eval(eval_source, self.namespace)
                     sys.displayhook(result)
             except SystemExit:
                 raise
@@ -150,18 +142,18 @@ class PythonInterpreter(object):
             end = time.clock()
 
             try:
-                plots = self.locals['__plots__']
+                plots = self.namespace['__plots__']
             except KeyError:
                 plots = []
 
             self.index += 1
 
             if result is not None:
-                self.locals['_%d' % self.index] = result
+                self.namespace['_%d' % self.index] = result
 
-                self.locals['___'] = self.locals.get('__')
-                self.locals['__'] = self.locals.get('_')
-                self.locals['_'] = result
+                self.namespace['___'] = self.namespace.get('__')
+                self.namespace['__'] = self.namespace.get('_')
+                self.namespace['_'] = result
 
             result = {
                 'source': source,
@@ -206,7 +198,7 @@ class PythonInterpreter(object):
             name, attrs = text, None
 
         try:
-            obj = self.locals[name]
+            obj = self.namespace[name]
         except KeyError:
             obj = None
         else:
