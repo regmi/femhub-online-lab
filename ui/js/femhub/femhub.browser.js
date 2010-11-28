@@ -215,7 +215,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
         this.foldersTree.on('contextmenu', function(node, evt) {
             var engines = [];
 
-            Ext.each(this.engines, function(engine) {
+            Ext.each(this.engines, function(engine, index) {
                 var text;
 
                 if (!engine.description.length) {
@@ -225,10 +225,9 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                 }
 
                 engines.push({
-                    uuid: engine.uuid,
                     text: text,
                     handler: function(item) {
-                        this.addWorksheetAt(node, item.uuid);
+                        this.addWorksheetAt(node, this.engines[index]);
                     },
                     scope: this,
                 });
@@ -358,6 +357,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
             this.openWorksheet({
                 uuid: record.data.uuid,
                 name: record.data.name,
+                engine: record.data.engine,
             });
         }, this);
 
@@ -374,6 +374,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                             this.openWorksheet({
                                 uuid: record.data.uuid,
                                 name: record.data.name,
+                                engine: record.data.engine,
                                 loadOutputCells: false,
                             });
                         },
@@ -383,6 +384,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
                         this.openWorksheet({
                             uuid: record.data.uuid,
                             name: record.data.name,
+                            engine: record.data.engine,
                         });
                     },
                     scope: this,
@@ -730,15 +732,16 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
     },
 
     newWorksheet: function(engine, handler, scope, node) {
-        engine = engine || this.engines[0].uuid;
+        engine = engine || this.engines[0];
         node = this.getCurrentNode(node);
 
-        var params = { name: 'untitled', engine_uuid: engine, folder_uuid: node.id };
+        var params = { name: 'untitled', engine_uuid: engine.uuid, folder_uuid: node.id };
 
         FEMhub.RPC.Worksheet.create(params, function(result) {
             if (result.ok === true) {
                 var worksheet = this.openWorksheet({
                     uuid: result.uuid,
+                    engine: engine,
                 });
 
                 if (Ext.isDefined(handler)) {
@@ -784,7 +787,7 @@ FEMhub.Browser = Ext.extend(FEMhub.Window, {
             'Please enter plain text:',
             function(button, text) {
                 if (button === 'ok') {
-                    this.newWorksheet(this.engines[0].uuid, function(worksheet) {
+                    this.newWorksheet(this.engines[0], function(worksheet) {
                         worksheet.importCells(text);
                     });
                 }

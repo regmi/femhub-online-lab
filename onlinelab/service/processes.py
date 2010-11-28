@@ -174,17 +174,24 @@ class ProcessManager(object):
         """Take engine's configuration and start process for it. """
         self.processes[uuid] = None
 
-        # XXX: this is temporary solution for development convenience
+        try:
+            engine = args['engine']['name'].lower()
+        except KeyError:
+            engine = 'python'
 
-        port = self.find_port()
+        namespace = {}
 
         try:
-            command = args.command
-        except AttributeError:
-            from engine.python import boot
-            command = ["python", "-c", boot % {'port': port}]
+            exec "from onlinelab.service.engine.%s import builder" % engine in namespace
+        except ImportError:
+            del self.processes[uuid]
+            fail('bad-engine')
+            return
 
+        port = self.find_port()
         env = self.build_env()
+
+        command = namespace['builder'](port)
 
         # Create a directory for a process that we will spawn in a moment. If
         # it already exists, make sure it is empty (just remove it and create

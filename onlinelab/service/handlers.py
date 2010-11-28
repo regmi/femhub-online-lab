@@ -65,9 +65,9 @@ class EngineHandler(jsonrpc.APIRequestHandler):
     okay = on_method_okay
     fail = on_method_fail
 
-    def init(self, uuid):
+    def init(self, uuid, engine):
         """Process 'init' method call from a client. """
-        self.manager.init(uuid, Args({}), self.okay, self.fail)
+        self.manager.init(uuid, Args(engine=engine), self.okay, self.fail)
 
     def kill(self, uuid):
         """Process 'kill' method call from a client. """

@@ -58,9 +58,9 @@ class AsyncHandler(WebHandler):
             self.return_internal_error()
             self.logger(self.method, ok=False, error=error)
 
-    def RPC__Engine__init(self, uuid):
+    def RPC__Engine__init(self, uuid, engine):
         """Forward 'init' method call to the assigned service. """
-        self.forward(uuid, 'init', {'uuid': uuid})
+        self.forward(uuid, 'init', {'uuid': uuid, 'engine': engine})
 
     def RPC__Engine__kill(self, uuid):
         """Forward 'kill' method call to the assigned service. """

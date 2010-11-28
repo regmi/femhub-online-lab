@@ -74,6 +74,10 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
         return this.uuid;
     },
 
+    getEngine: function() {
+        return this.engine;
+    },
+
     getRoot: function() {
         return this.root;
     },
@@ -287,7 +291,7 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
         config = config || {};
 
         if (!this.isInitialized || config.force === true) {
-            FEMhub.RPC.Engine.init({uuid: this.uuid}, {
+            FEMhub.RPC.Engine.init({uuid: this.uuid, engine: this.engine}, {
                 okay: function(result) {
                     this.isInitialized = true;
 
@@ -387,6 +391,9 @@ FEMhub.CellManager = Ext.extend(Ext.util.Observable, {
             break;
         case 'engine-running':
             msg = "Engine is already running.";
+            break;
+        case 'bad-engine':
+            msg = "There is no such engine.";
             break;
         default:
             msg = error;
