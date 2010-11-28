@@ -254,11 +254,6 @@ class PythonInterpreter(Interpreter):
         """Wrapper over Python's built-in :func:`compile` function. """
         return compile(source, self.filename, mode)
 
-    def traceback(self):
-        """Return nicely formatted most recent traceback. """
-        type, value, tb = sys.exc_info()
-        return ''.join(traceback.format_exception(type, value, tb.tb_next))
-
     def syntaxerror(self):
         """Return nicely formatted syntax error. """
         type, value, sys.last_traceback = sys.exc_info()
