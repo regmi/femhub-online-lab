@@ -163,3 +163,49 @@ plain text from Sage worksheet, e.g.::
 
 and click 'OK'. A new window will appear with all cells imported.
 
+Setting up JavaScript Engine
+============================
+
+Online Lab's JavaScript engine is based on Google's V8 JavaScript engine, so
+additional dependencies have to be installed:
+
+* V8   (http://code.google.com/p/v8/)
+* PyV8 (http://code.google.com/p/pyv8/)
+
+Detailed installation instructions can be found at:
+
+* http://code.google.com/apis/v8/build.html
+* http://code.google.com/p/pyv8/wiki/HowToBuild
+
+There is a lot of reading to be found there, but it's sufficient to issue the
+following commands to install both libraries, assuming 64-bit architecture::
+
+    svn checkout http://v8.googlecode.com/svn/trunk/ v8
+    svn checkout http://pyv8.googlecode.com/svn/trunk/ pyv8
+
+    cd v8
+    CCFLAGS=-fPIC scons arch=x64 library=static
+
+    cd ../pyv8
+    patch -p0 -i <path-to-online-lab-repo>/contrib/pyv8-sigint.diff
+    V8_HOME=../v8 python setup.py build
+
+Just make sure you don't use multi-lib with V8 (``arch=x64``) and that V8 is
+compiled as a static library, otherwise PyV8 won't compile. After successful
+compilation, put ``PyV8.py`` and ``_PyV8.so`` on ``PYTHONPATH``, e.g.::
+
+    ln -s `readlink -f .`/build/lib.linux-x86_64-2.6/* ~/.local/lib/python-2.6/site-packages/
+
+If you get ``engine-died`` error when using JavaScript engine via Online Lab
+services, then it's most likely the case that PyV8 modules aren't visible in
+Online Lab.
+
+JavaScript engine's entry is automatically added to the database during
+initialization of Online Lab's core, however, if you want to use an existing
+installation then you have to add this entry manually, e.g.::
+
+    $ onlinelab core run --home=<path-to-core-home> --code=<<EOF
+    > from onlinelab.core.models import Engine
+    > Engine.objects.create(name="JavaScript")
+    > EOF
+
