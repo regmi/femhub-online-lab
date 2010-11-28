@@ -126,8 +126,14 @@ def init(args):
     try:
         Engine.objects.get(name='Python')
     except Engine.DoesNotExist:
-        print "Added default 'Python' engine to the database."
+        print "Added 'Python' engine to the database."
         Engine.objects.create(name='Python')
+
+    try:
+        Engine.objects.get(name='JavaScript')
+    except Engine.DoesNotExist:
+        print "Added 'JavaScript' engine to the database."
+        Engine.objects.create(name='JavaScript')
 
     if not os.path.exists(settings.logs_path):
         os.makedirs(settings.logs_path)
