@@ -1,10 +1,7 @@
-"""Bootstrap code for a basic Python engine. """
-
-from runtime import PythonEngine
-from interpreter import PythonInterpreter
+"""Bootstrap code for a Python engine. """
 
 boot = """\
-from onlinelab.service.engine.python import PythonEngine
+from onlinelab.service.engine.python.runtime import PythonEngine
 PythonEngine().run(port=%(port)d)
 """
 
