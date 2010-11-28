@@ -44,6 +44,8 @@ class JavaScriptInterpreter(Interpreter):
         traceback = False
         result = None
 
+        source = source.rstrip()
+
         if not self.debug:
             self.trap.set()
 
@@ -54,7 +56,7 @@ class JavaScriptInterpreter(Interpreter):
                 with self.context as ctx:
                     result = ctx.eval(source, self.filename)
 
-                    if result is not None:
+                    if result is not None and source and source[-1] != ';':
                         sys.stdout.write(str(result) + '\n')
             except SystemExit:
                 raise
