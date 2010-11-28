@@ -8,7 +8,8 @@ import rlcompleter
 
 from StringIO import StringIO
 
-from outputtrap import OutputTrap
+from onlinelab.service.engine import OutputTrap
+
 from namespace import PythonNamespace
 from inspector import Inspector
 

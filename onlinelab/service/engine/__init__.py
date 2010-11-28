@@ -5,6 +5,8 @@ import sys
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 
+from utils.outputtrap import OutputTrap
+
 class EngineXMLRPCMethods(object):
     """Translation layer between engine API and an interpreter. """
 
