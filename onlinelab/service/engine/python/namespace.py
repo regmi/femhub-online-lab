@@ -5,7 +5,7 @@ class PythonNamespace(dict):
 
     components = ['matplotlib', 'pylab', 'show']
 
-    def __init__(self, locals={}, disable=[]):
+    def __init__(self, locals={}, disable=['pylab']):
         if locals is not None:
             self.setup(disable)
             self.update(locals)
