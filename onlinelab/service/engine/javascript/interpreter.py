@@ -49,15 +49,15 @@ class JavaScriptInterpreter(Interpreter):
         if not self.debug:
             self.trap.set()
 
-        start = time.clock()
-
         try:
-            try:
-                with self.context as ctx:
-                    result = ctx.eval(source, self.filename)
+            self.context.enter()
+            start = time.clock()
 
-                    if result is not None and source and source[-1] != ';':
-                        sys.stdout.write(str(result) + '\n')
+            try:
+                result = self.context.eval(source, self.filename)
+
+                if result is not None and source and source[-1] != ';':
+                    sys.stdout.write(str(result) + '\n')
             except SystemExit:
                 raise
             except KeyboardInterrupt:
@@ -65,12 +65,15 @@ class JavaScriptInterpreter(Interpreter):
                 interrupted = True
             except PyV8.JSError as exc:
                 traceback = "%s: %s" % (exc.name, exc.message)
+            except:
+                traceback = self.traceback()
 
             end = time.clock()
 
             out = self.trap.out
             err = self.trap.err
         finally:
+            self.context.leave()
             self.trap.reset()
 
         self.index += 1
