@@ -661,6 +661,34 @@ FEMhub.InputCell = Ext.extend(FEMhub.IOCell, {
         return true;
     },
 
+    splitCell: function() {
+        var cell = this.insertInputCellBefore();
+
+        var selection = this.getSelection();
+        var text = this.getText();
+
+        var upper = text.slice(0, selection.start);
+        var lower = text.slice(selection.start);
+
+        cell.setText(upper);
+        this.setText(lower);
+
+        cell.autosize();
+        this.autosize();
+
+        return cell;
+    },
+
+    splitCellUpper: function() {
+        this.splitCell();
+        this.focusCell();
+    },
+
+    splitCellLower: function() {
+        var cell = this.splitCell();
+        cell.focusCell();
+    },
+
     removeCell: function() {
         this.destroyOutputCells();
         FEMhub.InputCell.superclass.removeCell.call(this);
