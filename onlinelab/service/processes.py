@@ -317,7 +317,8 @@ class ProcessManager(object):
 
                 logging.info("Started new child process (pid=%s)" % process.pid)
 
-                okay('started')
+                memory = process.get_stat()['memory']['rss']
+                okay({'status': 'started', 'memory': memory})
             else:
                 # We got invalid data from the engine process, so lets
                 # clean up (remove process entry marker and kill the
@@ -552,8 +553,8 @@ class EngineProcess(object):
         self.proc.poll()
         okay('killed')
 
-    def stat(self, args, okay, fail):
-        """Gather data about this engine's process. """
+    def get_stat(self):
+        """Get statistics provided by ``psutil``.  """
         cpu_percent = self.util.get_cpu_percent()
         cpu_times = self.util.get_cpu_times()
         memory_percent = self.util.get_memory_percent()
@@ -562,10 +563,14 @@ class EngineProcess(object):
         user, system = cpu_times
         rss, vms = memory_info
 
-        okay({
+        return {
             'cpu': { 'percent': cpu_percent, 'user': user, 'system': system },
             'memory': { 'percent': memory_percent, 'rss': rss, 'vms': vms },
-        })
+        }
+
+    def stat(self, args, okay, fail):
+        """Gather data about this engine's process. """
+        okay(self.get_stat())
 
     def complete(self, args, okay, fail):
         """Complete code in this engine's process. """
@@ -669,6 +674,7 @@ class EngineProcess(object):
 
     def _process_response(self, result, okay):
         """Perform final processing of evaluation results. """
+        result['memory'] = self.get_stat()['memory']['rss']
         result['files'] = self.files
 
         self._read_stdout()

@@ -2,6 +2,7 @@
 
 import logging
 
+from time import time
 from datetime import datetime
 
 import tornado.escape
@@ -32,15 +33,18 @@ class WebHandler(DjangoMixin, CORSMixin, APIRequestHandler):
     def prepare(self):
         """Prepare this handler for handling CORS requests. """
         self.prepare_for_cors()
+        self.timestart = datetime.utcnow()
+        self.timestamp = time()
 
     def logger(self, action=None, args=None, **kwargs):
         """Log user actions for further analysis and refinement. """
         actions = logging.getLogger('actions')
 
         data = {
-            'datetime': str(datetime.now()),
             'username': self.user.username,
             'action': action or self.method,
+            'start': str(self.timestart),
+            'time': time() - self.timestamp,
         }
 
         data.update(self.params)
@@ -48,7 +52,7 @@ class WebHandler(DjangoMixin, CORSMixin, APIRequestHandler):
         data.update(kwargs)
 
         for key, value in dict(data).iteritems():
-            if 'password' in key:
+            if 'password' in key or 'email' in key:
                 del data[key]
 
         actions.info(tornado.escape.json_encode(data))

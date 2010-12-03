@@ -46,7 +46,13 @@ class AsyncHandler(WebHandler):
     def on_forward_okay(self, uuid, result):
         """Gets executed when remote call succeeded. """
         self.return_result(result)
-        self.logger(self.method, ok=True)
+
+        args = {}
+
+        if 'memory' in result:
+            args['memory'] = result['memory']
+
+        self.logger(self.method, ok=True, **args)
 
     def on_forward_fail(self, uuid, error, http_code):
         """Gets executed when remote call failed. """
